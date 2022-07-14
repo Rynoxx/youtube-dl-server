@@ -14,8 +14,6 @@ from starlette.routing import Route
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import GeoRestrictedError, ExtractorError, MaxDownloadsReached
 
-YTDL_DEFAULT_FORMAT = "bestvideo/bestaudio" #"bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio"
-
 class ErrorLogger:
     """
     Get the warnings/error from ytdl so that we can present it through the API
@@ -48,29 +46,35 @@ async def info(request):
     The route for getting youtube-dl info from string/format
     """
     url = request.query_params["url"]
-    media_format = request.query_params.get("format", YTDL_DEFAULT_FORMAT)
+    media_format = request.query_params.get("format", "")
+
+    if len(url) == 0:
+        return JSONResponse({
+            "success": False,
+            "errors": ["No URL specified"],
+            "warnings": [],
+            "data": [],
+        })
 
     logger = ErrorLogger()
 
     opts = {
         "quiet": True,
         "noplaylist": True,
-        "format": media_format,
         "logger": logger,
+        "no_color": True,
     }
+
+    if len(media_format) != 0:
+        opts["format"] = media_format
 
     with YoutubeDL(opts) as ytdl:
         data = {}
         try:
             data = ytdl.extract_info(url, download=False)
-        except GeoRestrictedError as e:
-            logger.errors.append(e.msg)
-        except ExtractorError as e:  # An error we somewhat expected
-            logger.errors.append(e)
-        except MaxDownloadsReached as e:
-            logger.errors.append(e)
-        except Exception as e:
-            logger.errors.append(e)
+        except Exception:
+            # We don't need to worry about exceptions, we're catching them via the logger parameter
+            pass
 
         success = len(data) > 0
 
@@ -80,28 +84,26 @@ async def info(request):
                 data = data['entries']
             else:
                 data = [data]
+        else: # Ensure that we return an array on non-successful requests
+            data = []
 
-        return JSONResponse(
-            {
-                "success": success,
-                "errors": logger.errors,
-                "warnings": logger.warnings,
-                "data": data
-            }
-        )
+        return JSONResponse({
+            "success": success,
+            "errors": logger.errors,
+            "warnings": logger.warnings,
+            "data": data
+        })
 
 async def index(request):
     """
     Index route to ensure that we respond to / and provide some documentation to users
     """
-    return JSONResponse(
-        {
-            "success": True,
-            "errors": [],
-            "warnings": ["You will get no data from this route, use /info?url={{url}}&format={{format}} instead"],
-            "data": []
-        }
-    )
+    return JSONResponse({
+        "success": True,
+        "errors": [],
+        "warnings": ["You will get no data from this route, use /info?url={{url}}&format={{format}} instead"],
+        "data": []
+    })
 
 routes = [
     Route("/", endpoint=index, methods=["GET"]),

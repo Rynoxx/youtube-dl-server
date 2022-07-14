@@ -40,12 +40,13 @@ python3 -m uvicorn youtube_dl_server:app --port 8123
 
 ## Usage
 
-Data can be fetched by supplying the `{{url}}` of the requested video through the REST interface via curl, etc.
+Data can be fetched by supplying the `{{url}}` and `{{format}}` of the requested video through the REST interface via curl, etc.  
+Format is the youtube-dl string for the -f option, i.e. `bestvideo` or `bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio`
 
 #### Curl
 
 ```shell
-curl -X GET http://{{host}}:8080/info?url={{url}}
+curl -X GET http://{{host}}:8080/info?url={{url}}&format={{format}}
 ```
 
 #### JS Fetch
