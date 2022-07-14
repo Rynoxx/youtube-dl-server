@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+starlette = "~=0.20.0"
+uvicorn = "~=0.18.2"
+youtube-dl = "*"
+
+[dev-packages]
+pylint = "*"
+
+[requires]
+python_version = "3"
+
+[scripts]
+execute = "uvicorn youtube_dl_server:app --host 0.0.0.0 --port 8080"
+dev = "uvicorn youtube_dl_server:app --host 0.0.0.0 --port 8080 --reload"
