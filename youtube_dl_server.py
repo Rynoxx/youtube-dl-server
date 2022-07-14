@@ -12,7 +12,6 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from youtube_dl import YoutubeDL
-from youtube_dl.utils import GeoRestrictedError, ExtractorError, MaxDownloadsReached
 
 class ErrorLogger:
     """
@@ -101,7 +100,9 @@ async def index(request):
     return JSONResponse({
         "success": True,
         "errors": [],
-        "warnings": ["You will get no data from this route, use /info?url={{url}}&format={{format}} instead"],
+        "warnings": [
+            "You will get no data from this route, use /info?url={{url}}&format={{format}} instead"
+        ],
         "data": []
     })
 
