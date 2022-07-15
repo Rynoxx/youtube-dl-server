@@ -1,0 +1,4 @@
+# created by virtualenv automatically
+*
+# Keep .gitignore as a .gitkeep file to ensure that .venv always exists and is available for pipenv to use as local venv
+!.gitignore
