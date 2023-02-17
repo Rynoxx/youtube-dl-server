@@ -6,7 +6,8 @@ name = "pypi"
 [packages]
 starlette = "~=0.20.0"
 uvicorn = "~=0.18.2"
-youtube-dl = "*"
+#youtube-dl = "*"
+yt-dlp = "*"
 
 [dev-packages]
 pylint = "*"

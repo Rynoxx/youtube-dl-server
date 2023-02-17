@@ -4,10 +4,12 @@
 
 # youtube-dl-server
 
-Barebones REST interface for getting youtube-dl info from a longrunning process.  
+Barebones REST interface for getting youtube-dl/yt-dlp info from a longrunning process.  
 This is to improve performance over the cli implementation as we don't need to initialize the extractors again for every request.
 
-[`starlette`](https://github.com/encode/starlette) + [`youtube-dl`](https://github.com/ytdl-org/youtube-dl).
+[`starlette`](https://github.com/encode/starlette) + [`yt-dlp`](https://github.com/yt-dlp/yt-dlp).
+
+Switched from [`youtube-dl`](https://github.com/ytdl-org/youtube-dl) to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) to get faster updates and some other improvements from yt-dlp not included in youtube-dl.
 
 ## Running
 
@@ -57,6 +59,6 @@ fetch(`http://${host}:8080/info?url=${url}&format=${format}`);
 
 ## Implementation
 
-The server uses [starlette](https://github.com/encode/starlette) for the web framework and [youtube-dl](https://github.com/rg3/youtube-dl) to handle the data fetching. The integration with youtube-dl makes use of their [python api](https://github.com/ytdl-org/youtube-dl#embedding-youtube-dl).
+The server uses [starlette](https://github.com/encode/starlette) for the web framework and [yt-dlp](https://github.com/yt-dlp/yt-dlp) to handle the data fetching. The integration with yt-dlp makes use of their [python api](https://github.com/yt-dlp/yt-dlp#embedding-yt-dlp).
 
 This docker image is based on [`python:3-alpine`](https://registry.hub.docker.com/_/python/) and consequently [`alpine:3`](https://hub.docker.com/_/alpine/).

@@ -11,7 +11,8 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from youtube_dl import YoutubeDL
+#from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 
 class ErrorLogger:
     """
