@@ -7,12 +7,16 @@ If downloads are to be made,
 they can easily be done using the URL in the API responses, i.e. `response.data[0].url`
 """
 
+import re
+
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 #from youtube_dl import YoutubeDL
 from yt_dlp import YoutubeDL
+
+combined_format_match = r"\[([^\+]+=[^\+]+)\+.*\]"
 
 class ErrorLogger:
     """
@@ -47,6 +51,26 @@ async def info(request):
     """
     url = request.query_params["url"]
     media_format = request.query_params.get("format", "")
+
+    # To convert standard youtube-dl format syntax to yt-dlp syntax, convert [x=y+a=b] to [x=y][a=b]
+    if re.search(combined_format_match, media_format):
+        in_brackets = False
+
+        # Reverse to be able to properly replace without affecting index
+        i = len(media_format)
+        while i > 0:
+            i-=1
+            c = media_format[i]
+
+            # Since we're going in reverse, start brackets means we're now outside of brackets.
+            if c == "[":
+                in_brackets = False
+            elif c == "]":
+                in_brackets = True
+            elif in_brackets and c == "+":
+                media_format = media_format[:i] + "][" + media_format[i+1:]
+
+
 
     if len(url) == 0:
         return JSONResponse({
