@@ -16,7 +16,7 @@ from starlette.routing import Route
 #from youtube_dl import YoutubeDL
 from yt_dlp import YoutubeDL
 
-combined_format_match = r"\[([^\+]+=[^\+]+)\+.*\]"
+COMBINED_FORMAT_MATCH = r"\[([^\+]+=[^\+]+)\+.*\]"
 
 class ErrorLogger:
     """
@@ -53,13 +53,13 @@ async def info(request):
     media_format = request.query_params.get("format", "")
 
     # To convert standard youtube-dl format syntax to yt-dlp syntax, convert [x=y+a=b] to [x=y][a=b]
-    if re.search(combined_format_match, media_format):
+    if re.search(COMBINED_FORMAT_MATCH, media_format):
         in_brackets = False
 
         # Reverse to be able to properly replace without affecting index
         i = len(media_format)
         while i > 0:
-            i-=1
+            i -= 1
             c = media_format[i]
 
             # Since we're going in reverse, start brackets means we're now outside of brackets.
@@ -69,7 +69,6 @@ async def info(request):
                 in_brackets = True
             elif in_brackets and c == "+":
                 media_format = media_format[:i] + "][" + media_format[i+1:]
-
 
 
     if len(url) == 0:
