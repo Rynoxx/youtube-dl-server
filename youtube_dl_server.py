@@ -1,13 +1,17 @@
 """
 API-server to fetch data from youtube-dl.
-The perk being a long-running server that doesn't need to constantly re-initialize all extractors
-each time youtube-dl is to be used, as is the case when using the CLI for youtube-dl.
+The perk being a long-running server that doesn't need to constantly
+re-initialize all extractors each time youtube-dl is to be used,
+as is the case when using the CLI for youtube-dl.
 
 If downloads are to be made,
-they can easily be done using the URL in the API responses, i.e. `response.data[0].url`
+they can easily be done using the URL in the API responses,
+i.e. `response.data[0].url`
 """
 
 import re
+
+import os
 
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
@@ -17,6 +21,8 @@ from starlette.routing import Route
 from yt_dlp import YoutubeDL
 
 COMBINED_FORMAT_MATCH = r"\[([^\+]+=[^\+]+)\+.*\]"
+COOKIEFILE = os.getenv('COOKIEFILE', '')
+
 
 class ErrorLogger:
     """
@@ -45,6 +51,7 @@ class ErrorLogger:
         """
         self.errors.append(msg)
 
+
 async def info(request):
     """
     The route for getting youtube-dl info from string/format
@@ -52,7 +59,8 @@ async def info(request):
     url = request.query_params["url"]
     media_format = request.query_params.get("format", "")
 
-    # To convert standard youtube-dl format syntax to yt-dlp syntax, convert [x=y+a=b] to [x=y][a=b]
+    # To convert standard youtube-dl format syntax to yt-dlp syntax
+    # convert [x=y+a=b] to [x=y][a=b]
     if re.search(COMBINED_FORMAT_MATCH, media_format):
         in_brackets = False
 
@@ -62,14 +70,13 @@ async def info(request):
             i -= 1
             c = media_format[i]
 
-            # Since we're going in reverse, start brackets means we're now outside of brackets.
+            # In reverse start brackets means we're now outside of brackets.
             if c == "[":
                 in_brackets = False
             elif c == "]":
                 in_brackets = True
             elif in_brackets and c == "+":
                 media_format = media_format[:i] + "][" + media_format[i+1:]
-
 
     if len(url) == 0:
         return JSONResponse({
@@ -91,23 +98,26 @@ async def info(request):
     if len(media_format) != 0:
         opts["format"] = media_format
 
+    if len(COOKIEFILE) > 0:
+        opts["cookiefile"] = COOKIEFILE
+
     with YoutubeDL(opts) as ytdl:
         data = {}
         try:
             data = ytdl.extract_info(url, download=False)
         except Exception:
-            # We don't need to worry about exceptions, we're catching them via the logger parameter
+            # The logger will handle the errors.
             pass
 
         success = len(data) > 0
 
         if success:
             if 'entries' in data:
-                # Remove all playlist meta-data, we only care about the content.
+                # Remove all playlist meta-data, we only care about the content
                 data = data['entries']
             else:
                 data = [data]
-        else: # Ensure that we return an array on non-successful requests
+        else:  # Ensure that we return an array on non-successful requests
             data = []
 
         return JSONResponse({
@@ -117,15 +127,17 @@ async def info(request):
             "data": data
         })
 
+
 async def index(request):
     """
-    Index route to ensure that we respond to / and provide some documentation to users
+    Respond to / and provide some documentation to users
     """
     return JSONResponse({
         "success": True,
         "errors": [],
         "warnings": [
-            "You will get no data from this route, use /info?url={{url}}&format={{format}} instead"
+            "You will get no data from this route, " +
+            "use /info?url={{url}}&format={{format}} instead"
         ],
         "data": []
     })

@@ -1,5 +1,5 @@
 FROM python:3-alpine
-
+ENV COOKIEFILE=
 RUN adduser -D -h /usr/src/app python
 
 RUN mkdir -p /usr/src/app/.venv && chown python:python -R /usr/src/app
