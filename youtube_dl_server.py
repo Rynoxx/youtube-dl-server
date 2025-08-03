@@ -22,6 +22,11 @@ from yt_dlp import YoutubeDL
 
 COMBINED_FORMAT_MATCH = r"\[([^\+]+=[^\+]+)\+.*\]"
 COOKIEFILE = os.getenv('COOKIEFILE', '')
+USER_AGENT = os.getenv(
+        'USER_AGENT',
+        "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) "
+        + "Gecko/20100101 Firefox/140.0"
+)
 
 
 class ErrorLogger:
@@ -58,6 +63,7 @@ async def info(request):
     """
     url = request.query_params["url"]
     media_format = request.query_params.get("format", "")
+    user_agent = request.query_params.get("user-agent", USER_AGENT)
 
     # To convert standard youtube-dl format syntax to yt-dlp syntax
     # convert [x=y+a=b] to [x=y][a=b]
@@ -93,6 +99,9 @@ async def info(request):
         "noplaylist": True,
         "logger": logger,
         "no_color": True,
+        "http_headers": {
+            "User-Agent": user_agent,
+        },
     }
 
     if len(media_format) != 0:
